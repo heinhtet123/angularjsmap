@@ -1,0 +1,140 @@
+<html ng-app="countryApp">
+  <head>
+    <meta charset="utf-8">
+    <title>Angular.js Example</title>
+    <!-- <link href="bootstrap.min.css"> -->
+     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.10/angular.min.js"></script>
+
+ <!-- <script src="angular.js"></script> -->    
+ <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.10/angular-route.min.js"></script>
+    <script>
+      var lat =20.4515923; 
+      var lng =95.7777328;
+      var zoomlevel=5; 
+      var countryApp = angular.module('countryApp', ['ngRoute']);
+
+      countryApp.config(function($routeProvider){
+      	$routeProvider.when('/:countryName',{
+      		templateUrl: 'countrydetail.html',
+      		controller: 'CountryDetailCtrl'
+      	});
+      });
+
+
+      countryApp.controller('CountryCtrl', ['$scope', '$http', function ($scope, $http){
+        $http.get('countries.json').success(function(data) {
+          $scope.countries = data;
+        });
+        
+        $scope.sortField="population";
+        $scope.reverse=true;
+      }]);
+      
+
+      countryApp.controller('CountryDetailCtrl', function ($scope,$http,$routeParams){
+      	$scope.name= $routeParams.countryName;
+
+      	$http.get('countries.json').success(function(data){
+
+      		$scope.country=data.filter(function(entry){
+      			return entry.name===$scope.name;
+      		})[0];
+      	   
+          lat=$scope.country.lat;
+          lng=$scope.country.long;
+          zoomlevel=$scope.country.zoomlevel;
+          
+
+         myCenter = new google.maps.LatLng(lat, lng);  
+         mapOptions = {
+         center:myCenter,
+         zoom:zoomlevel,
+         mapTypeId:google.maps.MapTypeId.ROADMAP
+         };
+         
+        
+        var map=new google.maps.Map(document.getElementById("googleMap"),mapOptions);
+
+        });
+
+      });
+        
+
+     
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+
+  </head>
+  <body ng-controller="CountryCtrl">
+  	<div class="container">
+
+	  	<div class="row">
+	  		
+	  		<div class="col-md-4">
+			  	<div class="form-group">
+			  		<label for="usr">Search:</label>
+					<input ng-model="query" class="form-control" type="text"/>
+			    </div>
+		    </div>
+	    </div>
+    
+    	<div class="row">
+    		<div class="col-md-4">
+    			<table  class="table">
+    				<thead>
+    					<tr>
+    						<th>
+    							<a href="" ng-click="sortField='name'; reverse=!reverse">Country</a>
+    						</th>
+    					</tr>
+    				</thead>
+    				<tbody>
+    					<tr ng-repeat="country in countries | filter:query | orderBy:sortField:reverse">
+    						 <td><a href="#/{{country.name}}" style="text-decoration: none;">{{country.name}}</a></td>
+    					</tr>
+    				</tbody>
+    			</table>
+    		</div>
+
+    		<div class="col-md-4" ng-view>
+
+    		</div>
+
+    		<div class="col-md-4">
+    			<div id="googleMap" style="width:100%; height:400px;"></div>
+
+    		</div>
+    	</div>
+    </div>
+    
+   
+    <script type="text/javascript">
+    	
+    
+		var myCenter = new google.maps.LatLng(lat, lng);  
+
+    	var mapOptions = {
+		  center:myCenter,
+		  zoom:zoomlevel,
+		  mapTypeId:google.maps.MapTypeId.ROADMAP
+		  };
+
+		var map=new google.maps.Map(document.getElementById("googleMap"),mapOptions);
+
+		// var marker=new google.maps.Marker({
+		//   position:myCenter,
+		//   map: map,
+		//   });
+
+		// var infowindow = new google.maps.InfoWindow({
+		//   content:"<?php echo $data['title']; ?>"
+		//   });
+
+		//marker parameter in info window
+		//infowindow.open(map);
+    </script>
+
+  </body>
+</html>
